@@ -37,9 +37,10 @@ class Page(models.Model):
     class Meta:
         verbose_name = _('Page')
         verbose_name_plural = _('Pages')
-        permissions = (
-            ('view_page', 'Can view page'),
-        )
+        if VERSION[:2] < (2, 1):
+            permissions = (
+                ('view_page', 'Can view page'),
+            )
 
     class EditionConflict(Exception):
         pass
