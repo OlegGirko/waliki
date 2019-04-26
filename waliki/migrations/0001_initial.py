@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 from django.conf import settings
+from django import VERSION
 
 
 class Migration(migrations.Migration):
@@ -40,7 +41,9 @@ class Migration(migrations.Migration):
                 ('markup', models.CharField(max_length=20, default='reStructuredText', choices=[('reStructuredText', 'reStructuredText'), ('Markdown', 'Markdown')], verbose_name='Markup')),
             ],
             options={
-                'permissions': (('view_page', 'Can view page'),),
+                'permissions':
+                    (('view_page', 'Can view page'),)
+                        if VERSION[:2] < (2, 1) else (),
                 'verbose_name_plural': 'Pages',
                 'verbose_name': 'Page',
             },

@@ -15,7 +15,6 @@ else:
 from django.dispatch import receiver
 from django.utils.six import string_types
 from django.utils.translation import ugettext_lazy as _
-from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import Permission, Group, AnonymousUser
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -26,7 +25,7 @@ from waliki.settings import (get_slug, sanitize, WALIKI_DEFAULT_MARKUP,
                              WALIKI_MARKUPS_SETTINGS, WALIKI_DATA_DIR,
                              WALIKI_CACHE_TIMEOUT)
 
-@python_2_unicode_compatible
+
 class Page(models.Model):
     MARKUP_CHOICES = [(m.name, m.name) for m in _markups.get_all_markups()]
     title = models.CharField(verbose_name=_('Title'), max_length=200, blank=True, null=True)
@@ -38,14 +37,18 @@ class Page(models.Model):
     class Meta:
         verbose_name = _('Page')
         verbose_name_plural = _('Pages')
-        permissions = (
-            ('view_page', 'Can view page'),
-        )
+        if VERSION[:2] < (2, 1):
+            permissions = (
+                ('view_page', 'Can view page'),
+            )
 
     class EditionConflict(Exception):
         pass
 
     def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
         return self.path
 
     def get_absolute_url(self):
@@ -76,6 +79,7 @@ class Page(models.Model):
                 break
             except IntegrityError:
                 page.slug += '-'
+
         return page
 
     @property
@@ -163,7 +167,6 @@ class Page(models.Model):
         return cached_content
 
 
-@python_2_unicode_compatible
 class ACLRule(models.Model):
     TO_ANY = 'any'
     TO_LOGGED = 'logged'
@@ -187,8 +190,11 @@ class ACLRule(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
     groups = models.ManyToManyField(Group, blank=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return _('Rule: %(name)s for /%(slug)s') % {'name': self.name, 'slug': self.slug}
+
+    def __str__(self):
+        return self.__unicode__()
 
     class Meta:
         verbose_name = _('ACL rule')
